@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-4.0.xsd 
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-4.0.xsd 
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-4.0.xsd ">
+
+	<bean id="txManger" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	<!-- 定义通知 -->
+	<tx:advice id="txAdvice" transaction-manager="txManger">
+		<tx:attributes>
+			<!-- 定义需要添加事务的方法
+			传播行为:多个事务方法相互调用时，事务如 何在这些方法间相互调用 REQUIRED：如果有事务，则在事务中执行；如果没有事务，则 
+				开启一个新的事物 SUPPORTS：如果有事务，则在事务中执行；如果没有事 务，则不会开启事物 mandatory 强制要有事务，当前没有事务抛出异常 
+				required_new 总是开启一个新的事务，当前存在事务， 将当前事务挂起 not_support 以非事务方式运行，如果存在事务，将当 前事务挂起 
+				never 以非事务方式运行，如果存在事务，抛出异常 nested 嵌套事务，如果当前存在事务，在嵌套事务中执 行，如果没有 以required方式运行 -->
+			<tx:method name="add*" propagation="REQUIRED" />
+			<tx:method name="del*" propagation="REQUIRED" />
+			<tx:method name="upd*" propagation="REQUIRED" />
+			<tx:method name="sel*" propagation="SUPPORTS" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+	<aop:config>
+		<!-- 定义切点 -->
+		<aop:pointcut expression="execution(* com.zhongke.modules.service.impl.*.*(..))" id="p1" />
+		<!-- <aop:advisor advice-ref=""/> -->
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="p1" />
+	</aop:config>
+</beans>
